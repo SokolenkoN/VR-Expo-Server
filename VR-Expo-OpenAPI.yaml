@@ -1,0 +1,228 @@
+---
+openapi: 3.0.0
+info:
+  title: VR-Expo OpenAPI спецификация
+  version: 1.0.0
+servers:
+- url: http://127.0.0.1:8000/api/
+  description: Dev server
+tags:
+- name: users
+  description: Запросы доступные пользователям
+paths:
+  /files:
+    get:
+      tags:
+      - users
+      summary: метод получения списка всех файлов с возможностью фильтрации
+      description: |
+        Передав соответствующие параметры вы можете найти нужные файлы из списка.
+      operationId: getAllFiles
+      parameters:
+      - name: query
+        in: query
+        description: Передать необязательную строку поиска для поиска файлов. (Это может быть как полное Имя или описание так и их часть)
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: Список файлов, удовлетворяющих запросу.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Files'
+    post:
+      tags:
+      - users
+      summary: метод загрузки нового файла
+      description: |
+        Передав соответствующие параметры вы можете загрузить новый файл.
+      operationId: addFile
+      requestBody:
+        content:
+          formdata:
+            schema:
+              $ref: '#/components/schemas/UploadFile'
+        required: true
+      responses:
+        "200":
+          description: Успешный ответ с созданным файлом
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/File'
+        "400":
+          description: Не все данные были добавлены либо они не корректные.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/inline_response_400'
+  /files/{name}:
+    get:
+      tags:
+      - users
+      summary: метод получения файла
+      description: |
+        Передав соответствующие параметры вы можете получить один определенный файл.
+      operationId: getFileById
+      parameters:
+      - name: name
+        in: path
+        description: имя файла
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+        example: Скин CS:GO.3d
+      responses:
+        "200":
+          description: Успешный ответ с одним файлом
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/File'
+        "404":
+          description: Файл не найден.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/inline_response_400'
+    put:
+      tags:
+      - users
+      summary: метод обновления данных о файле
+      description: |
+        Передав соответствующие параметры вы можете обновить данные о файле.
+      operationId: updatetFileById
+      parameters:
+      - name: name
+        in: path
+        description: имя файла
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+        example: Скин CS:GO.3d
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateFile'
+        required: true
+      responses:
+        "200":
+          description: Успешный ответ с обновленными данными о файле
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FileUp'
+        "404":
+          description: Файл не найден.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/inline_response_400'
+    delete:
+      tags:
+      - users
+      summary: Метод удаления файла
+      description: |
+        Передав соответствующие параметры вы можете удалить определенный файл.
+      operationId: deleteFileById
+      parameters:
+      - name: name
+        in: path
+        description: имя файла
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+        example: Скин CS:GO.3d
+      responses:
+        "200":
+          description: Файл успешно удалён.
+        "404":
+          description: Файл не найден.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/inline_response_400'
+components:
+  schemas:
+    File:
+      required:
+      - description
+      - file
+      - name
+      properties:
+        data:
+          $ref: '#/components/schemas/File_data'
+    FileUp:
+      required:
+      - description
+      - file
+      - name
+      properties:
+        data:
+          $ref: '#/components/schemas/File_data'
+    Files:
+      type: array
+      items:
+        $ref: '#/components/schemas/File'
+    UploadFile:
+      required:
+      - description
+      - file
+      - name
+      properties:
+        name:
+          type: string
+          example: Скин CS:GO.3d
+        description:
+          type: string
+          example: АК-47 Витя
+        file:
+          type: object
+          example: AK-47_Vitya.3d
+    UpdateFile:
+      properties:
+        name:
+          type: string
+          example: Скин CS:GO.3d
+        description:
+          type: string
+          example: АК-47 Витя
+    inline_response_400:
+      type: object
+      properties:
+        message:
+          type: string
+    File_data:
+      type: object
+      properties:
+        name:
+          type: string
+          example: Скин CS:GO.3d
+        description:
+          type: string
+          example: АК-47 Витя
+        size:
+          type: integer
+          example: 104013
+        microtime_name:
+          type: string
+          example: f7fc59c47f878ae59692ff222a2dd4e2.3d
+        link:
+          type: string
+          format: url
+          example: http://127.0.0.1:8000/storage/files/f7fc59c47f878ae59692ff222a2dd4e2.3d
+        created_at:
+          type: integer
+        updated_at:
+          type: integer
